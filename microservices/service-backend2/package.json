@@ -10,7 +10,7 @@
     "start": "node server.js"
   },
   "license": "MIT",
-  "repository": "https://github.com/spylkkanen/kubernetes-microservices",
+  "repository": "https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes",
   "dependencies": {
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",

@@ -1,10 +1,10 @@
 apiVersion: skaffold/v2beta22
 kind: Config
 metadata:
-  name: admin-service
+  name: service-frontend
 build:
   artifacts:
-    - image: piomin/admin
+    - image: kdidi/ms-k8s-frontend
       jib: {}
   tagPolicy:
     gitCommit: {}
