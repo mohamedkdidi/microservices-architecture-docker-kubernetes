@@ -1,0 +1,10 @@
+apiVersion: skaffold/v2beta22
+kind: Config
+metadata:
+  name: service-frontend
+build:
+  artifacts:
+    - image: kdidi/ms-k8s-frontend
+      jib: {}
+  tagPolicy:
+    gitCommit: {}

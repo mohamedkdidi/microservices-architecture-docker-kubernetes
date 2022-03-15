@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  service-frontend:
+    build: 
+      context: .
+      dockerfile: microservices/service-frontend/Dockerfile
+      args: 
+        build_config: production
+    ports: 
+      - 9000:3000
+    environment:
+      - PORT=3000
+      - SERVICE_API1_ENDPOINT=http://localhost:9010/api
+    networks: 
+      - microservices-network
+
+  service-backend1:
+    build: 
+      context: .
+      dockerfile: microservices/service-backend1/Dockerfile
+      args: 
+        build_info: Built from Docker compose
+    ports: 
+      - 9010:3010
+    depends_on:
+      - frontend     
+    environment:
+      - PORT=3010
+      - SERVICE_API2_ENDPOINT=http://service-backend2:3020/api
+    networks: 
+      - microservices-network
+
+  service-backend2:
+    build: 
+      context: .
+      dockerfile: microservices/service-backend2/Dockerfile
+      args: 
+        build_info: Built from Docker compose
+    expose:
+      - 3020
+    depends_on:
+      - service-backend1
+    environment:
+      - PORT=3020
+    networks: 
+      - microservices-network
+
+networks:
+  microservices-network:
