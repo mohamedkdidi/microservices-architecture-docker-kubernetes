@@ -1,0 +1,56 @@
+# Microservice backend 2.
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: service-backend2
+  labels:
+    app: service-backend2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: service-backend2
+  template:
+    metadata:
+      labels:
+        app: service-backend2
+    spec:
+      containers:
+      - name: service-backend2-pods
+
+        image: kdidi/ms-k8s-service-backend2:latest
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 3020
+
+        env:       
+        - name: PORT
+          value: "3020"
+
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3020
+          initialDelaySeconds: 3
+          periodSeconds: 1800
+
+        # resources:
+        #   requests:
+        #     memory: "256M"
+        #     cpu: 0.25
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: service-backend2-svc
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3020
+  selector:
+    app: service-backend2
