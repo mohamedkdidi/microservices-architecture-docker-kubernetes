@@ -24,7 +24,7 @@ services:
     ports: 
       - 9010:3010
     depends_on:
-      - frontend     
+      - service-frontend     
     environment:
       - PORT=3010
       - SERVICE_API2_ENDPOINT=http://service-backend2:3020/api
