@@ -1,4 +1,4 @@
-[![Current build](https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes/.github/workflows/node.js.yml/badge.svg)](https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes/.github/workflows/node.js.yml)
+[![Current build](https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes/blob/main/.github/workflows/node.js.yml/badge.svg)](https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes/blob/main/.github/workflows/node.js.yml)
 [![Coverage Status](https://coveralls.io/repos/github/mohamedkdidi/microservices-architecture-docker-kubernetes/badge.svg?branch=main)](https://coveralls.io/github/mohamedkdidi/microservices-architecture-docker-kubernetes?branch=main)
 ![Current Release](https://img.shields.io/github/release/mohamedkdidi/microservices-architecture-docker-kubernetes/all.svg)
 [![Code Style Prettier](https://img.shields.io/badge/Code%20Style-Prettier-ff69b4.svg)](https://github.com/prettier/prettier)
