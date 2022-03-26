@@ -45,6 +45,10 @@ The services can be run on the background with command:
 docker-compose up -d
 ```
 
+### Application URL 
+Local build enpoint url application using Docker Compose 
+http://localhost:9000/
+
 ### Stop the System
 Stopping all the running containers is also simple with a single command:
 ```bash
