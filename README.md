@@ -32,9 +32,28 @@ cd microservices-workshop
 git clone https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes.git .
 ```
 
-#### Start the application
-```
+### Run the System
+We can easily run the whole with only a single command:
+```bash
 docker-compose up
+```
+
+Docker will pull the MongoDB and Node.js images (if our machine does not have it before).
+
+The services can be run on the background with command:
+```bash
+docker-compose up -d
+```
+
+### Stop the System
+Stopping all the running containers is also simple with a single command:
+```bash
+docker-compose down
+```
+
+If you need to stop and remove all containers, networks, and all images used by any service in <em>docker-compose.yml</em> file, use the command:
+```bash
+docker-compose down --rmi all
 ```
 
 
@@ -47,6 +66,9 @@ docker-compose -f docker-compose.prod.yml up
 
 
 #### Options
+
+##### Clean-up
+Run the PowerShell script clean-docker.ps1 to remove all Docker images and containers
 
 
 ### Contributing
