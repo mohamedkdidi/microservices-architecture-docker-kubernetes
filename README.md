@@ -1,5 +1,4 @@
-[![Current build](https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes/actions/workflows/node.js.yml/badge.svg)](https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes/actions/workflows/node.js.yml)
-[![Coverage Status](https://coveralls.io/repos/github/mohamedkdidi/microservices-architecture-docker-kubernetes/badge.svg?branch=main)](https://coveralls.io/github/mohamedkdidi/microservices-architecture-docker-kubernetes?branch=main)
+[![Current build](https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes/actions/workflows/docker-compose.yml/badge.svg)](https://github.com/mohamedkdidi/microservices-architecture-docker-kubernetes/actions/workflows/docker-compose.yml)
 ![Current Release](https://img.shields.io/github/release/mohamedkdidi/microservices-architecture-docker-kubernetes/all.svg)
 [![Code Style Prettier](https://img.shields.io/badge/Code%20Style-Prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
@@ -13,12 +12,25 @@ Make sure you have the latest Docker and docker-compose installed. You may also 
 
 ### Architecture
 
-### Used technologies
+### Technologies to use
 
-- [Node.js](https://nodejs.org/en/)
-- [Swagger](https://swagger.io)
-- [Kubernetes](https://kubernetes.io/)
+- [Docker](https://www.docker.com)
+- [Kubernetes](https://kubernetes.io)
 - [Helm](https://github.com/kubernetes/helm)
+- [Github Action](https://docs.github.com/en/actions)
+- [Kong & Konga](https://konghq.com)
+- [decK] (https://github.com/Kong/deck)
+- [Kafka](https://kafka.apache.org)
+- [MongoDB](https://www.mongodb.com)
+- [Node.js](https://nodejs.org)
+- [Swagger](https://swagger.io)
+- [ReactJs](https://reactjs.org)
+- [NextJs](https://nextjs.org)
+- [Cypress](https://www.cypress.io)
+- [SonarCloud](https://sonarcloud.io)
+- [Terraform Cloud](https://www.terraform.io)
+- [Azure](https://portal.azure.com)
+
 
 
 ### Quickstart
@@ -44,10 +56,6 @@ The services can be run on the background with command:
 ```bash
 docker-compose up -d
 ```
-
-### Application URL 
-Local build enpoint url application using Docker Compose 
-http://localhost:9000/
 
 ### Stop the System
 Stopping all the running containers is also simple with a single command:

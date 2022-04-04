@@ -1,19 +1,162 @@
-version: '3.8'
+
+version: '3.9'
+
 
 services:
-  mongodb:
-    image: mongo:5.0.2
-    restart: unless-stopped
-    env_file: ./.env
+  # PostgreSQL database for Kong serivce
+  kong-db:
+    image: postgres:9.5
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=$MONGODB_USER
-      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD
-    ports:
-      - $MONGODB_LOCAL_PORT:$MONGODB_DOCKER_PORT
-    volumes:
-      - db:/data/db
+      POSTGRES_DB: ${KONG_PG_DATABASE:-kong}
+      POSTGRES_USER: ${KONG_PG_USER:-kong}
+      POSTGRES_PASSWORD_FILE: /run/secrets/kong_postgres_password
+    secrets:
+      - kong_postgres_password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${KONG_PG_USER:-kong}"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+    deploy:
+      restart_policy:
+        condition: on-failure
+    stdin_open: true
+    tty: true
     networks:
-      - backend-network
+      - kong-net
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+
+  # Kong database migrations bootstrap service
+  kong-migrations:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    command: kong migrations bootstrap
+    depends_on:
+      - kong-db
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: ${KONG_PG_USER:-kong}
+      KONG_PG_PASSWORD_FILE: /run/secrets/kong_postgres_password
+    secrets:
+      - kong_postgres_password
+    networks:
+      - kong-net
+    restart: on-failure
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  # Kong database migrations up service 
+  kong-migrations-up:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    command: kong migrations up && kong migrations finish
+    depends_on:
+      - kong-db
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: ${KONG_PG_USER:-kong}
+      KONG_PG_PASSWORD_FILE: /run/secrets/kong_postgres_password
+    secrets:
+      - kong_postgres_password
+    networks:
+      - kong-net
+    restart: on-failure
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  # Kong API gateway service
+  kong:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    user: "${KONG_USER:-kong}"
+    depends_on:
+      - kong-db
+    environment:
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_PROXY_LISTEN: "${KONG_PROXY_LISTEN:-0.0.0.0:8000}"
+      KONG_ADMIN_LISTEN: "${KONG_ADMIN_LISTEN:-0.0.0.0:8001}"
+      KONG_CASSANDRA_CONTACT_POINTS: kong-db
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: ${KONG_PG_USER:-kong}
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_PG_PASSWORD_FILE: /run/secrets/kong_postgres_password
+      KONG_PREFIX: ${KONG_PREFIX:-/var/run/kong}
+    secrets:
+      - kong_postgres_password
+    networks:
+      - kong-net
+    ports:
+      # The following two environment variables default to an insecure value (0.0.0.0)
+      # according to the CIS Security test.
+      - "${KONG_INBOUND_PROXY_LISTEN:-0.0.0.0}:8000:8000/tcp"
+      - "${KONG_INBOUND_SSL_PROXY_LISTEN:-0.0.0.0}:8443:8443/tcp"
+      # Making them mandatory but undefined, like so would be backwards-breaking:
+      # - "${KONG_INBOUND_PROXY_LISTEN?Missing inbound proxy host}:8000:8000/tcp"
+      # - "${KONG_INBOUND_SSL_PROXY_LISTEN?Missing inbound proxy ssl host}:8443:8443/tcp"
+      # Alternative is deactivating check 5.13 in the security bench, if we consider Kong's own config to be enough security here
+
+      - "127.0.0.1:8001:8001/tcp"
+      - "127.0.0.1:8444:8444/tcp"
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: on-failure:5
+    read_only: true
+    volumes:
+      - kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}
+      - kong_tmp_vol:/tmp
+    deploy:
+      restart_policy:
+        delay: 50s
+        condition: on-failure
+        max_attempts: 5
+        window: 10s
+      resources:
+        limits:
+          cpus: ${KONG_CPU_LIMIT:-2}
+          memory: ${KONG_MEMORY_LIMIT:-2g}
+    security_opt:
+      - no-new-privileges
+
+  # Konga database prepare service
+  konga-prepare:
+    image: pantsel/konga:latest
+    command: "-c prepare -a postgres -u postgresql://kong:${KONG_PG_PASSWORD:-kong}@kong-db:5432/konga"
+    networks:
+      - kong-net
+    restart: on-failure
+    secrets:
+      - kong_postgres_password
+    depends_on:
+      - kong-db
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+
+  # Konga GUI service, Kong admin API interface
+  konga:
+    image: pantsel/konga:latest
+    restart: always
+    networks:
+        - kong-net   
+    environment:
+      DB_ADAPTER: postgres
+      DB_URI: postgresql://kong:${KONG_PG_PASSWORD:-kong}@kong-db:5432/konga
+      NODE_ENV: production
+    depends_on:
+      - kong-db
+    ports:
+      - "1337:1337"
 
   service-frontend:
     build: 
@@ -22,58 +165,60 @@ services:
       args: 
         build_config: production
     ports: 
-      - $FRONT_LOCAL_PORT:$FRONT_DOCKER_PORT
+      - 9000:3000
     environment:
-      - PORT=$FRONT_DOCKER_PORT
-      - SERVICE_API1_ENDPOINT=http://localhost:$BACKEND1_LOCAL_PORT/api
-    networks:
-      - frontend-network
+      - PORT=3000
+      - SERVICE_API1_ENDPOINT=http://localhost:9010/api
+    networks: 
+      - microservices-network
 
   service-backend1:
-    restart: unless-stopped
     build: 
       context: .
       dockerfile: microservices/service-backend1/Dockerfile
       args: 
         build_info: Built from Docker compose
-    env_file: ./.env
     ports: 
-      - $BACKEND1_LOCAL_PORT:$BACKEND1_DOCKER_PORT
+      - 9010:3010
     depends_on:
       - service-frontend     
     environment:
-      - PORT=$BACKEND1_DOCKER_PORT
-      - SERVICE_API2_ENDPOINT=http://service-backend2:$BACKEND2_DOCKER_PORT/api
-      - DB_HOST=mongodb
-      - DB_USER=$MONGODB_USER
-      - DB_PASSWORD=$MONGODB_PASSWORD
-      - DB_NAME=$MONGODB_DATABASE
-      - DB_PORT=$MONGODB_DOCKER_PORT
-      - CLIENT_ORIGIN=$CLIENT_ORIGIN
+      - PORT=3010
+      - SERVICE_API2_ENDPOINT=http://service-backend2:3020/api
     networks: 
-      - backend-network
-      - frontend-network
+      - microservices-network
 
   service-backend2:
-    restart: unless-stopped
     build: 
       context: .
       dockerfile: microservices/service-backend2/Dockerfile
       args: 
         build_info: Built from Docker compose
     expose:
-      - $BACKEND2_DOCKER_PORT
+      - 3020
     depends_on:
       - service-backend1
-      - mongodb
     environment:
-      - PORT=$BACKEND2_DOCKER_PORT
+      - PORT=3020
     networks: 
-      - backend-network
+      - microservices-network
 
-volumes: 
-  db:
+volumes:
+  kong_data: {}
+  kong_prefix_vol:
+    driver_opts:
+     type: tmpfs
+     device: tmpfs
+  kong_tmp_vol:
+    driver_opts:
+     type: tmpfs
+     device: tmpfs
 
 networks:
-  backend-network:
-  frontend-network:
+  microservices-network:
+  kong-net:
+    external: false
+
+secrets:
+  kong_postgres_password:
+    file: ./POSTGRES_PASSWORD  
