@@ -1,0 +1,11 @@
+
+# Install rest client VS code extension to use this file
+# https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+GET http://localhost:8001/ HTTP/1.
+
+###
+GET http://localhost:8001/services HTTP/1.
+
+###
+GET http://localhost:8001/upstreams HTTP/1.

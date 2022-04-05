@@ -1,0 +1,18 @@
+name: Docker Compose CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code 🛎
+      uses: actions/checkout@v3    
+    # run utility services in the background
+    # using docker-compose (see docker-compose.yml file)
+    - name: Run docker-compose
+      run: docker-compose up
