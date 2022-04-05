@@ -1,9 +1,7 @@
 name: Docker Compose CI
-
 on:
   push:
     branches: [ main ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,5 +10,5 @@ jobs:
       uses: actions/checkout@v3    
     # run utility services in the background
     # using docker-compose (see docker-compose.yml file)
-    - name: Run docker-compose
+    - name: Run docker-compose -d
       run: docker-compose up
