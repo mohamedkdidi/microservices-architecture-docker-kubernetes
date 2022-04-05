@@ -19,7 +19,7 @@ Make sure you have the latest Docker and docker-compose installed. You may also 
 - [Helm](https://github.com/kubernetes/helm)
 - [Github Action](https://docs.github.com/en/actions)
 - [Kong & Konga](https://konghq.com)
-- [decK] (https://github.com/Kong/deck)
+- [decK](https://github.com/Kong/deck)
 - [Kafka](https://kafka.apache.org)
 - [MongoDB](https://www.mongodb.com)
 - [Node.js](https://nodejs.org)
@@ -56,6 +56,15 @@ The services can be run on the background with command:
 ```bash
 docker-compose up -d
 ```
+### Application URL 
+Local build enpoint url application using Docker Compose 
+http://localhost:9000/
+
+### Konga Dashboard
+http://localhost:1337/
+
+### Kong admin endpoint
+http://localhost:8001/
 
 ### Stop the System
 Stopping all the running containers is also simple with a single command:
