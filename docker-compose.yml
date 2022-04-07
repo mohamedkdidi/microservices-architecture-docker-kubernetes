@@ -84,6 +84,7 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/kong_postgres_password
     secrets:
       - kong_postgres_password
+    command: postgres -c config_file=/etc/postgresql.conf
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${KONG_PG_USER:-kong}"]
       interval: 30s
@@ -99,7 +100,8 @@ services:
       - kong-net
     volumes:
       - kong_data:/var/lib/postgresql/data
-
+      - ./postgresql.conf:/etc/postgresql.conf
+      
   # Kong database migrations bootstrap service
   kong-migrations:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
