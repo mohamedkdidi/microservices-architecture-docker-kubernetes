@@ -75,3 +75,11 @@ myvalues.yaml
 dist/
 tmp/
 tmp.zip
+
+# Docker volumes
+mongo_data
+kong/kong_prefix_vol
+kong/kong_tmp_vol
+kong/logs
+kong/konga_data
+kong/kong_data
